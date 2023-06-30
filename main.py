@@ -15,13 +15,13 @@ async def create_file(
     text: Annotated[str, Form()],
     token: Annotated[Union[str, None], Form()] = None,
 ):
-    if token !=  os.environ.get('PDFANNOTATE_TOKEN'):
+    if token !=  os.environ.get('PDFANNOTATOR_TOKEN'):
         return {"error": "wrong token"}
 
     stream = annotate_pdf(file.file.read(), text)
 
     headers = {
-        f'Content-Disposition': 'attachment; filename={file.filename}'
+        'Content-Disposition': f'attachment; filename={file.filename}'
     }
     return StreamingResponse(stream, headers=headers, media_type="application/pdf")
 
@@ -34,9 +34,10 @@ def annotate_pdf(in_bytes: bytes, text: str) -> io.BytesIO:
 
     overlay = FPDF()
     overlay.add_page(format=dim)
-    overlay.set_font('helvetica', size=24)
+    overlay.set_font('helvetica', size=14)
     overlay.set_text_color(255, 0, 0)
-    overlay.text(txt=text, x=80, y=10)
+    overlay.set_margins(left=60, top=0)
+    overlay.multi_cell(w=200, txt=text)
 
     pdf2 = PdfWriter()
     pdf2.append(io.BytesIO(overlay.output()))
